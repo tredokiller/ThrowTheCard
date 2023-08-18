@@ -1,3 +1,4 @@
+using System;
 using Input.InputManager;
 using Player.Trajectory.Scripts;
 using UnityEngine;
@@ -11,21 +12,23 @@ namespace Player.Controller.Scripts
         [SerializeField] private InputManager inputManager;
         [SerializeField] private BezierCurveController bezierCurveController;
 
-        [SerializeField] private GameObject obj;
+        [SerializeField] private GameObject throwObject;
         
         private Vector2 _inputPlayer;
         
         [Header("Card")] 
         [SerializeField] private float cardSpeed = 1;
-        private bool _canThrowCard;
-        
 
-        [Header("Trajectory")] 
-        [SerializeField] private TrajectoryMover trajectoryMover;
+        private bool _canThrowCard = true;
 
         private void UpdateInputPlayer()
         {
             _inputPlayer = inputManager.PlayerActions.Movement.ReadValue<Vector2>();
+        }
+
+        private void OnEnable()
+        {
+            inputManager.PlayerActions.Touch.canceled += context => TryToThrowCard();
         }
 
         private void Update()
@@ -35,28 +38,34 @@ namespace Player.Controller.Scripts
             if (_inputPlayer != Vector2.zero)
             {
                 UpdateThrowTrajectory();
-                _canThrowCard = true;
             }
             else
             {
-                if (_canThrowCard)
-                {
-                    ThrowCard();
-                    _canThrowCard = false;
-                }
                 bezierCurveController.ClearPath();
             }
         }
 
-        private void ThrowCard()
+        private void TryToThrowCard()
         {
-           bezierCurveController.MoveByQuadraticPath(obj.transform, cardSpeed); 
+            if (_canThrowCard)
+            {
+                throwObject.SetActive(false);
+                bezierCurveController.MoveByQuadraticPath(throwObject.transform, cardSpeed , (() => _canThrowCard = true));
+                throwObject.SetActive(true);
+                
+                _canThrowCard = false;
+            }
         }
 
         private void UpdateThrowTrajectory()
         {
             bezierCurveController.DrawQuadraticPath();
-            trajectoryMover.Move(_inputPlayer);
+            bezierCurveController.MoveCenterOfCurve(_inputPlayer);
+        }
+
+        private void OnDisable()
+        {
+            inputManager.PlayerActions.Touch.canceled -= context => TryToThrowCard();
         }
     }
 }

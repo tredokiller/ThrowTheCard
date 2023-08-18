@@ -8,5 +8,13 @@ namespace Common
         {
             return Random.Range(0, 2) == 0;
         }
+
+        public static int GetRandomIndexFromArray(int arrayLength)
+        {
+            return Random.Range(0, arrayLength);
+        }
+        
     }
+    
+    
 }

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Player.Trajectory.Scripts
 {
-    public class TrajectoryMover : MonoBehaviour
+    public class TrajectoryPathChanger : MonoBehaviour
     {
         [SerializeField] private Transform middlePointOfTrajectory;
         private Vector3 _startMiddlePointPosition;

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Player.Trajectory.Scripts
@@ -10,6 +11,12 @@ namespace Player.Trajectory.Scripts
         [SerializeField] private Transform middlePoint;
         [SerializeField] private Transform finalPoint;
         
+        
+        private const float HorizontalMovementMultiplier = 2.2f;
+        private const float VerticalMovementMultiplier = 2.5f;
+        
+        private Vector3 _startMiddlePointPosition;
+        
         private LineRenderer _bezierLineRenderer;
 
         private const int NumberOfPoints = 70;
@@ -17,9 +24,9 @@ namespace Player.Trajectory.Scripts
         private void Awake()
         {
             _bezierLineRenderer = GetComponent<LineRenderer>();
+            _startMiddlePointPosition = middlePoint.position;
         }
-        
-        
+
         public void DrawQuadraticPath()
         {
             _bezierLineRenderer.positionCount = NumberOfPoints;
@@ -32,11 +39,21 @@ namespace Player.Trajectory.Scripts
             }
             _bezierLineRenderer.SetPositions(positions);
         }
+        
+        public void MoveCenterOfCurve(Vector2 position)
+        {
+            var newHorizontalPos = _startMiddlePointPosition.x + position.x * HorizontalMovementMultiplier;
+            var newVerticalPos = _startMiddlePointPosition.z + position.y * VerticalMovementMultiplier;
+            
+            middlePoint.position = new Vector3(newHorizontalPos,
+                _startMiddlePointPosition.y, newVerticalPos);
+        }
+        
 
-        public void MoveByQuadraticPath(Transform obj , float duration)
+        public void MoveByQuadraticPath(Transform obj , float duration , Action finishedCallback = null)
         {
             StartCoroutine(BezierCurve.MoveByQuadraticBezierCoroutine
-                (obj, duration, startPoint.position, middlePoint.position, finalPoint.position));
+                (obj, duration, startPoint.position, middlePoint.position, finalPoint.position , finishedCallback));
         }
         
         public void ClearPath()
